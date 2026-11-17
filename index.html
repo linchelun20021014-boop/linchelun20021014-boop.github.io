@@ -1,0 +1,1413 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>語文結構與自主聯想學習網</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Noto Sans TC', sans-serif;
+            background-color: #f8fafc;
+        }
+        .step-card {
+            transition: all 0.3s ease;
+        }
+        .word-chip {
+            transition: all 0.2s ease;
+        }
+        .word-chip:hover {
+            transform: translateY(-2px);
+        }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col">
+
+    <!-- Header Navigation -->
+    <header class="bg-indigo-600 text-white shadow-lg sticky top-0 z-50">
+        <div class="max-w-6xl mx-auto px-4 py-4 flex flex-wrap justify-between items-center gap-4">
+            <div class="flex items-center space-x-3">
+                <div class="bg-white/20 p-2.5 rounded-xl backdrop-blur-md">
+                    <i class="fa-solid fa-brain text-2xl text-yellow-300"></i>
+                </div>
+                <div>
+                    <h1 class="text-xl font-bold tracking-wide">語文結構與聯想學習樂園</h1>
+                    <p class="text-xs text-indigo-200">國語照樣寫寫看 ‧ 句型造句練習 ‧ 自主聯想與靈感詞庫</p>
+                </div>
+            </div>
+            
+            <div class="flex items-center space-x-2">
+                <button id="reset-btn" class="bg-indigo-500 hover:bg-indigo-400 text-white text-sm px-4 py-2 rounded-lg font-medium transition flex items-center gap-1.5 shadow">
+                    <i class="fa-solid fa-rotate-right"></i> 重置重來
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <main class="max-w-6xl mx-auto px-4 py-8 flex-grow w-full grid grid-cols-1 lg:grid-cols-12 gap-8">
+        
+        <!-- Left Column: Topic Selector & Input (4 cols on lg) -->
+        <section class="lg:col-span-4 space-y-6">
+            
+            <!-- Step 1: Select Topic -->
+            <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-200/80 hover:shadow-md transition">
+                <div class="flex items-center space-x-3 mb-4">
+                    <span class="w-8 h-8 rounded-full bg-indigo-100 text-indigo-700 font-bold flex items-center justify-center text-sm">1</span>
+                    <h2 class="text-lg font-bold text-slate-800">選擇學習主題</h2>
+                </div>
+
+                <label for="topic-select" class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">預設範例題目</label>
+                <select id="topic-select" class="w-full p-3 bg-slate-50 border border-slate-300 rounded-xl font-medium text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white transition mb-4">
+                    <!-- Options populated by JS -->
+                </select>
+
+                <div class="relative flex py-2 items-center">
+                    <div class="flex-grow border-t border-slate-200"></div>
+                    <span class="flex-shrink mx-3 text-xs text-slate-400 font-medium">或自行輸入</span>
+                    <div class="flex-grow border-t border-slate-200"></div>
+                </div>
+
+                <div class="mt-2 space-y-3">
+                    <input type="text" id="custom-sentence" placeholder="請輸入句子 (例: 小狗在花園裡快樂地奔跑)" class="w-full p-3 border border-slate-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                    <button id="apply-custom-btn" class="w-full bg-slate-800 hover:bg-slate-700 text-white font-medium py-2.5 rounded-xl text-sm transition shadow-sm">
+                        <i class="fa-solid fa-wand-magic-sparkles mr-1 text-yellow-400"></i> 分析自訂句子
+                    </button>
+                </div>
+            </div>
+
+            <!-- Current Sentence Focus Box -->
+            <div class="bg-gradient-to-br from-indigo-500 to-purple-600 rounded-2xl p-6 text-white shadow-md">
+                <span class="text-xs font-semibold tracking-wider text-indigo-200 uppercase block mb-1">當前分析目標句</span>
+                <p id="target-sentence-display" class="text-xl font-bold leading-relaxed mb-4">--</p>
+                
+                <div class="bg-white/10 rounded-xl p-3 backdrop-blur-sm text-xs text-indigo-100 flex items-start space-x-2">
+                    <i class="fa-solid fa-lightbulb text-yellow-300 mt-0.5"></i>
+                    <span>學習提示：觀察句子的結構，想想看換成別的詞，意思會產生什麼有趣變化？</span>
+                </div>
+            </div>
+
+            <!-- Learning Progress Card -->
+            <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-200/80">
+                <h3 class="font-bold text-slate-800 text-sm mb-3 flex items-center justify-between">
+                    <span>學習探索進度</span>
+                    <span id="progress-text" class="text-xs font-bold text-indigo-600">0%</span>
+                </h3>
+                <div class="w-full bg-slate-100 h-2.5 rounded-full overflow-hidden">
+                    <div id="progress-bar" class="bg-indigo-600 h-full rounded-full transition-all duration-500" style="width: 0%"></div>
+                </div>
+            </div>
+
+        </section>
+
+        <!-- Right Column: Interactive Analysis & Thinking Steps (8 cols on lg) -->
+        <section class="lg:col-span-8 space-y-6">
+            
+            <!-- Step 2: Part of Speech Analysis & Thinking Area -->
+            <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-200/80">
+                <div class="flex items-center justify-between mb-6 pb-4 border-b border-slate-100">
+                    <div class="flex items-center space-x-3">
+                        <span class="w-8 h-8 rounded-full bg-indigo-100 text-indigo-700 font-bold flex items-center justify-center text-sm">2</span>
+                        <div>
+                            <h2 class="text-lg font-bold text-slate-800">結構解析與自主聯想</h2>
+                            <p class="text-xs text-slate-500">拆解句子成分，發揮想像力進行替換或擴充！</p>
+                        </div>
+                    </div>
+                    <button id="toggle-wordbank-global" class="text-xs text-indigo-600 hover:text-indigo-800 font-semibold bg-indigo-50 px-3 py-1.5 rounded-lg border border-indigo-100 transition">
+                        <i class="fa-solid fa-book-open mr-1"></i> 切換詞庫模式
+                    </button>
+                </div>
+
+                <!-- Dynamic POS Container -->
+                <div id="pos-elements-container" class="space-y-6">
+                    <!-- Dynamic rendering via JS -->
+                </div>
+            </div>
+
+            <!-- Step 3: Interactive Output & Creation Preview -->
+            <div class="bg-emerald-50/50 rounded-2xl p-6 border border-emerald-200/80 shadow-sm relative overflow-hidden">
+                <div class="flex items-center justify-between mb-4">
+                    <div class="flex items-center space-x-3">
+                        <span class="w-8 h-8 rounded-full bg-emerald-100 text-emerald-700 font-bold flex items-center justify-center text-sm">3</span>
+                        <h2 class="text-lg font-bold text-emerald-900">成果：你的全新創作</h2>
+                    </div>
+                    <div class="flex items-center space-x-2">
+                        <button id="speak-btn" class="bg-emerald-600 hover:bg-emerald-700 text-white text-xs px-3 py-1.5 rounded-lg font-medium transition shadow-sm flex items-center gap-1">
+                            <i class="fa-solid fa-volume-high"></i> 朗讀創作
+                        </button>
+                        <button id="copy-btn" class="bg-white hover:bg-emerald-100 text-emerald-800 border border-emerald-300 text-xs px-3 py-1.5 rounded-lg font-medium transition shadow-sm flex items-center gap-1">
+                            <i class="fa-solid fa-copy"></i> 複製文字
+                        </button>
+                    </div>
+                </div>
+
+                <div class="bg-white p-5 rounded-xl border border-emerald-200 shadow-inner min-h-[90px] flex items-center">
+                    <p id="generated-result" class="text-xl font-bold text-slate-800 leading-relaxed tracking-wide">
+                        <!-- Live text generated here -->
+                    </p>
+                </div>
+
+                <!-- Self Reflection & Comparison -->
+                <div class="mt-4 pt-4 border-t border-emerald-200/60 flex flex-wrap items-center justify-between gap-3 text-xs text-emerald-800">
+                    <div class="flex items-center space-x-2">
+                        <i class="fa-solid fa-circle-check text-emerald-600"></i>
+                        <span>對比原句：修飾詞更豐富了嗎？畫面感有沒有提升呢？</span>
+                    </div>
+                </div>
+            </div>
+
+        </section>
+
+    </main>
+
+    <!-- Global Toast / Alert Box -->
+    <div id="toast" class="fixed bottom-6 right-6 bg-slate-900 text-white px-5 py-3 rounded-xl shadow-xl transform translate-y-20 opacity-0 transition-all duration-300 flex items-center space-x-3 z-50">
+        <i id="toast-icon" class="fa-solid fa-circle-info text-indigo-400"></i>
+        <span id="toast-msg" class="text-sm font-medium">通知訊息</span>
+    </div>
+
+    <!-- Application Script -->
+    <script>
+        // Preset Topics Database based on Files 1 to 7
+        const TOPIC_DATABASE = [
+            // --- 檔案 1 ---
+            {
+                id: "f1_1",
+                category: "檔案 1 - 照樣寫寫看",
+                title: "1. 「抖去」「水珠」的「鳳蝶兒」",
+                sentence: "抖去水珠的鳳蝶兒",
+                components: [
+                    {
+                        type: "verb",
+                        label: "動作 (動詞)",
+                        role: "主角所做的動作",
+                        original: "抖去",
+                        prompt: "做什麼動作？（例：擦去、甩掉、張開、張大）",
+                        bank: ["擦去", "甩掉", "張開", "揮動", "摘下", "洗去", "拍打"]
+                    },
+                    {
+                        type: "noun1",
+                        label: "對象 (名詞)",
+                        role: "動作作用的名詞",
+                        original: "水珠",
+                        prompt: "動作標的是什麼？（例：汗水、泥巴、雙翅、眼睛）",
+                        bank: ["汗水", "泥巴", "雙翅", "灰塵", "果實", "眼淚", "網子"]
+                    },
+                    {
+                        type: "de",
+                        label: "結構詞",
+                        role: "連接修飾與名詞",
+                        original: "的",
+                        prompt: "結構助詞",
+                        bank: ["的"]
+                    },
+                    {
+                        type: "noun2",
+                        label: "主要名詞 (主詞)",
+                        role: "句子的核心主角",
+                        original: "鳳蝶兒",
+                        prompt: "是誰或什麼動物/事物？（例：運動員、小狗、大鷹、農夫）",
+                        bank: ["運動員", "小狗", "大鷹", "小弟弟", "農夫", "小鳥"]
+                    }
+                ]
+            },
+            {
+                id: "f1_2",
+                category: "檔案 1 - 照樣寫寫看",
+                title: "2. 給「雨」「潤過」的「泥路」，一定是「涼爽」又「溫柔」",
+                sentence: "給雨潤過的泥路，一定是涼爽又溫柔。",
+                components: [
+                    {
+                        type: "noun1",
+                        label: "自然/人物 (名詞)",
+                        role: "施加動作的主體",
+                        original: "雨",
+                        prompt: "是被什麼東西影響？（例：風、陽光、微風、師長）",
+                        bank: ["風", "陽光", "微風", "海浪", "老師", "雪花"]
+                    },
+                    {
+                        type: "verb",
+                        label: "動作狀態 (動詞)",
+                        role: "對象發生的動作變化",
+                        original: "潤過",
+                        prompt: "進行了什麼動作？（例：吹過、照過、洗過、鼓勵過）",
+                        bank: ["吹過", "照過", "洗過", "撫過", "鼓勵過", "刷過"]
+                    },
+                    {
+                        type: "de",
+                        label: "連接詞",
+                        role: "連接修飾與名詞",
+                        original: "的",
+                        prompt: "結構助詞",
+                        bank: ["的"]
+                    },
+                    {
+                        type: "noun2",
+                        label: "目標地點/事物 (名詞)",
+                        role: "接受動作的事物",
+                        original: "泥路",
+                        prompt: "是什麼地點或事物？（例：山林、大地、沙灘、心靈）",
+                        bank: ["山林", "大地", "沙灘", "街道", "心靈", "花園"]
+                    },
+                    {
+                        type: "fixed1",
+                        label: "連接副詞",
+                        role: "轉折與強調",
+                        original: "一定是",
+                        prompt: "表示推測或肯定",
+                        bank: ["一定是", "應該是", "顯得特別"]
+                    },
+                    {
+                        type: "adj1",
+                        label: "形容詞 1",
+                        role: "描述第一種特質",
+                        original: "涼爽",
+                        prompt: "感覺起來如何？（例：清爽、明亮、柔軟、溫暖）",
+                        bank: ["清爽", "明亮", "柔軟", "溫暖", "堅定", "舒適"]
+                    },
+                    {
+                        type: "fixed2",
+                        label: "連接詞",
+                        role: "並列連接",
+                        original: "又",
+                        prompt: "並列形容詞",
+                        bank: ["又"]
+                    },
+                    {
+                        type: "adj2",
+                        label: "形容詞 2",
+                        role: "描述第二種特質",
+                        original: "溫柔",
+                        prompt: "還有什麼特質？（例：舒適、美麗、乾淨、充實）",
+                        bank: ["舒適", "美麗", "乾淨", "親切", "充實", "動人"]
+                    }
+                ]
+            },
+
+            // --- 檔案 2 ---
+            {
+                id: "f2_1",
+                category: "檔案 2 - 照樣寫寫看",
+                title: "1. 養在「一個」用「竹條」「編織」的「籠子」裡",
+                sentence: "放在一個用竹條編織的籠子裡",
+                components: [
+                    {
+                        type: "verb1",
+                        label: "放置動作 (動詞)",
+                        role: "物品放置狀態",
+                        original: "放在",
+                        prompt: "物品是怎樣放置的？（例：裝在、擺在、盛在、寫在）",
+                        bank: ["裝在", "擺在", "盛在", "種在", "寫在", "收在"]
+                    },
+                    {
+                        type: "quant",
+                        label: "數量詞",
+                        role: "計算事物的單位",
+                        original: "一個",
+                        prompt: "數量單位是什麼？（例：一個、一只、一口、一頁）",
+                        bank: ["一個", "一只", "一口", "一個", "一頁", "一座"]
+                    },
+                    {
+                        type: "fixed1",
+                        label: "介詞",
+                        role: "引介工具材料",
+                        original: "用",
+                        prompt: "使用什麼材料？",
+                        bank: ["用"]
+                    },
+                    {
+                        type: "material",
+                        label: "材料/工具 (名詞)",
+                        role: "製作或構成的材料",
+                        original: "竹條",
+                        prompt: "是用什麼材料做成的？（例：木板、黏土、玻璃、文字）",
+                        bank: ["木板", "黏土", "玻璃", "毛線", "文字", "鋼筋"]
+                    },
+                    {
+                        type: "verb2",
+                        label: "製作動作 (動詞)",
+                        role: "對材料加工的動作",
+                        original: "編織",
+                        prompt: "對材料做了什麼動作？（例：打造、雕刻、吹製、勾勒）",
+                        bank: ["打造", "雕刻", "吹製", "編織", "勾勒", "築成"]
+                    },
+                    {
+                        type: "de",
+                        label: "結構詞",
+                        role: "連接修飾與容器名詞",
+                        original: "的",
+                        prompt: "結構助詞",
+                        bank: ["的"]
+                    },
+                    {
+                        type: "container",
+                        label: "容器/空間 (名詞)",
+                        role: "盛裝的容器或地方",
+                        original: "籠子",
+                        prompt: "盛裝的容器或地方是什麼？（例：箱子、花瓶、城堡、筆記本）",
+                        bank: ["箱子", "花瓶", "城堡", "小罐", "筆記本", "花盆"]
+                    },
+                    {
+                        type: "fixed2",
+                        label: "方位詞",
+                        role: "內部位置",
+                        original: "裡",
+                        prompt: "位置（裡/上/中）",
+                        bank: ["裡", "上", "中"]
+                    }
+                ]
+            },
+            {
+                id: "f2_2",
+                category: "檔案 2 - 照樣寫寫看",
+                title: "2. 「一盆」「異常」「茂盛」的「植栽」",
+                sentence: "一盆異常茂盛的植栽",
+                components: [
+                    {
+                        type: "quant",
+                        label: "數量詞",
+                        role: "量詞與數量",
+                        original: "一盆",
+                        prompt: "什麼量詞？（例：一株、一位、一場、一座）",
+                        bank: ["一株", "一位", "一場", "一座", "一件", "一幅"]
+                    },
+                    {
+                        type: "adv",
+                        label: "程度副詞",
+                        role: "修飾形容詞的程度",
+                        original: "異常",
+                        prompt: "程度有多深？（例：格外、非常、十分、無比）",
+                        bank: ["格外", "非常", "十分", "無比", "極為", "相當"]
+                    },
+                    {
+                        type: "adj",
+                        label: "形容詞",
+                        role: "描繪狀態特徵",
+                        original: "茂盛",
+                        prompt: "狀態如何？（例：高大、優秀、精彩、雄偉）",
+                        bank: ["高大", "優秀", "精彩", "雄偉", "精美", "精湛"]
+                    },
+                    {
+                        type: "de",
+                        label: "結構詞",
+                        role: "連接修飾語",
+                        original: "的",
+                        prompt: "結構助詞",
+                        bank: ["的"]
+                    },
+                    {
+                        type: "noun",
+                        label: "主要名詞",
+                        role: "被形容的事物",
+                        original: "植栽",
+                        prompt: "指的是什麼事物/人物？（例：大樹、選手、表演、建築）",
+                        bank: ["大樹", "選手", "表演", "建築", "藝術品", "畫作"]
+                    }
+                ]
+            },
+
+            // --- 檔案 3 ---
+            {
+                id: "f3_1",
+                category: "檔案 3 - 我會照樣寫",
+                title: "1. 想為這「場」「聚會」「添加」「熱鬧」「氣氛」",
+                sentence: "想為這場聚會添加熱鬧氣氛",
+                components: [
+                    {
+                        type: "fixed1",
+                        label: "動詞片語",
+                        role: "表示目的",
+                        original: "想為這",
+                        prompt: "固定句型",
+                        bank: ["想為這"]
+                    },
+                    {
+                        type: "quant",
+                        label: "單位量詞",
+                        role: "量詞",
+                        original: "場",
+                        prompt: "量詞是什麼？（例：個、位、次、座）",
+                        bank: ["個", "位", "次", "座", "幅", "首"]
+                    },
+                    {
+                        type: "noun1",
+                        label: "活動/對象 (名詞)",
+                        role: "對象名詞",
+                        original: "聚會",
+                        prompt: "是什麼活動或場合？（例：故事、比賽、城市、畫作）",
+                        bank: ["故事", "比賽", "城市", "畫作", "歌曲", "表演"]
+                    },
+                    {
+                        type: "verb",
+                        label: "動作 (動詞)",
+                        role: "進行的行為",
+                        original: "添加",
+                        prompt: "要帶來或做什麼動作？（例：增添、融入、注入、帶來）",
+                        bank: ["增添", "融入", "注入", "帶來", "賦予", "創造"]
+                    },
+                    {
+                        type: "adj",
+                        label: "形容詞",
+                        role: "修飾名詞",
+                        original: "熱鬧",
+                        prompt: "怎樣的風格或性質？（例：歡樂、豐富、新穎、溫馨）",
+                        bank: ["歡樂", "豐富", "新穎", "溫馨", "獨特", "神秘"]
+                    },
+                    {
+                        type: "noun2",
+                        label: "抽象名詞",
+                        role: "產生的感受或成果",
+                        original: "氣氛",
+                        prompt: "帶來什麼感受或特質？（例：色彩、活力、靈感、氣息）",
+                        bank: ["色彩", "活力", "靈感", "氣息", "魅力", "情感"]
+                    }
+                ]
+            },
+            {
+                id: "f3_2",
+                category: "檔案 3 - 我會照樣寫",
+                title: "2. 「字裡行間」「流露」著「詩人」的「期待」",
+                sentence: "字裡行間流露著詩人的期待",
+                components: [
+                    {
+                        type: "location",
+                        label: "情境/處所 (成語或名詞)",
+                        role: "動作發生的範疇",
+                        original: "字裡行間",
+                        prompt: "在哪裡或什麼情況下？（例：舉手投足、言語之中、畫卷之上、眼神之中）",
+                        bank: ["舉手投足", "言語之中", "畫卷之上", "眼神之中", "字裡行間", "音符之間"]
+                    },
+                    {
+                        type: "verb",
+                        label: "表達動作 (動詞)",
+                        role: "顯現出來的動作",
+                        original: "流露",
+                        prompt: "展現出什麼動態？（例：散發、充滿、顯現、傳達）",
+                        bank: ["散發", "充滿", "顯現", "傳達", "洋溢", "透露"]
+                    },
+                    {
+                        type: "fixed1",
+                        label: "動態詞",
+                        role: "持續狀態",
+                        original: "著",
+                        prompt: "狀態持續助詞",
+                        bank: ["著"]
+                    },
+                    {
+                        type: "person",
+                        label: "人物 (名詞)",
+                        role: "主角或創造者",
+                        original: "詩人",
+                        prompt: "是誰的情感？（例：智者、母親、畫家、作者）",
+                        bank: ["智者", "母親", "畫家", "作者", "演員", "長輩"]
+                    },
+                    {
+                        type: "de",
+                        label: "結構詞",
+                        role: "連接修飾",
+                        original: "的",
+                        prompt: "結構助詞",
+                        bank: ["的"]
+                    },
+                    {
+                        type: "emotion",
+                        label: "情感/想法 (名詞)",
+                        role: "表現出的核心心態",
+                        original: "期待",
+                        prompt: "是什麼樣的心態或情感？（例：智慧、慈愛、熱情、關懷）",
+                        bank: ["智慧", "慈愛", "熱情", "關懷", "思念", "自信"]
+                    }
+                ]
+            },
+            {
+                id: "f3_句1",
+                category: "檔案 3 - 造句練習",
+                title: "3. 【造句】盡其所能——",
+                sentence: "為了達成夢想，他盡其所能地克服所有困難。",
+                components: [
+                    {
+                        type: "pre",
+                        label: "前置條件/目標",
+                        role: "事情發生的原因或目的",
+                        original: "為了達成夢想，他",
+                        prompt: "為了什麼目標或遇到什麼情況？",
+                        bank: ["為了贏得比賽，選手們", "面對這次考驗，大家都", "為了救治病人，醫生"]
+                    },
+                    {
+                        type: "idiom",
+                        label: "成語核心",
+                        role: "盡其所能",
+                        original: "盡其所能",
+                        prompt: "核心成語",
+                        bank: ["盡其所能"]
+                    },
+                    {
+                        type: "particle",
+                        label: "連接詞",
+                        role: "地",
+                        original: "地",
+                        prompt: "修飾副詞標記",
+                        bank: ["地"]
+                    },
+                    {
+                        type: "action",
+                        label: "後續行動",
+                        role: "付出的努力或行動",
+                        original: "克服所有困難。",
+                        prompt: "做了什麼努力或嘗試？",
+                        bank: ["練習每一個動作。", "提供最好的協助。", "完成交付的任務。"]
+                    }
+                ]
+            },
+            {
+                id: "f3_句2",
+                category: "檔案 3 - 造句練習",
+                title: "4. 【造句】如果……可以……——",
+                sentence: "如果明天放晴，我們就可以去郊遊。",
+                components: [
+                    {
+                        type: "if",
+                        label: "假設條件 (如果)",
+                        role: "如果 + 條件",
+                        original: "如果明天放晴，",
+                        prompt: "假設發生的狀況是什麼？",
+                        bank: ["如果平時認真複習，", "如果你遇到困難，", "如果能重來一次，"]
+                    },
+                    {
+                        type: "subject",
+                        label: "主語",
+                        role: "執行動作的人",
+                        original: "我們",
+                        prompt: "主角是誰？",
+                        bank: ["我們", "你", "大家", "我"]
+                    },
+                    {
+                        type: "then",
+                        label: "結果功能 (可以)",
+                        role: "就可以 + 結果",
+                        original: "就可以去郊遊。",
+                        prompt: "就能夠實現什麼結果？",
+                        bank: ["就可以輕鬆應考。", "可以隨時向我求助。", "就可以把事情做得更好。"]
+                    }
+                ]
+            },
+
+            // --- 檔案 4 ---
+            {
+                id: "f4_句1",
+                category: "檔案 4 - 造句練習",
+                title: "1. 【造句】沒有……但……——",
+                sentence: "這間房子雖然沒有華麗的裝潢，但環境十分乾淨舒適。",
+                components: [
+                    {
+                        type: "part1",
+                        label: "缺乏事物 (沒有...)",
+                        role: "描述缺少的部分",
+                        original: "這間房子雖然沒有華麗的裝潢，",
+                        prompt: "缺乏了什麼外在或條件？",
+                        bank: ["他雖然沒有顯赫的家世，", "這場表演沒有華麗的舞台效果，", "這個禮物沒有昂貴的包裝，"]
+                    },
+                    {
+                        type: "part2",
+                        label: "轉折優勢 (但...)",
+                        role: "強調擁有的優點或轉折",
+                        original: "但環境十分乾淨舒適。",
+                        prompt: "但有什麼優點或讓人讚賞的地方？",
+                        bank: ["憑著努力贏得大家的尊重。", "真摯的演出深深打動了觀眾。", "包含了滿滿的情意與祝福。"]
+                    }
+                ]
+            },
+
+            // --- 檔案 5 ---
+            {
+                id: "f5_1",
+                category: "檔案 5 - 我會照樣寫",
+                title: "1. 確保「影音」的「品質」",
+                sentence: "確保影音的品質",
+                components: [
+                    {
+                        type: "verb",
+                        label: "核心動作 (動詞)",
+                        role: "動詞，維持或保護",
+                        original: "確保",
+                        prompt: "要執行什麼動作？（例：維持、提升、維護、保持）",
+                        bank: ["維持", "提升", "維護", "保持", "發揮", "展現"]
+                    },
+                    {
+                        type: "noun1",
+                        label: "領域/對象 (名詞)",
+                        role: "事物名稱",
+                        original: "影音",
+                        prompt: "是什麼事物或領域？（例：環境、產品、健康、心態）",
+                        bank: ["環境", "產品", "身體", "校園", "團隊", "服務"]
+                    },
+                    {
+                        type: "de",
+                        label: "結構詞",
+                        role: "連接名詞",
+                        original: "的",
+                        prompt: "結構助詞",
+                        bank: ["的"]
+                    },
+                    {
+                        type: "noun2",
+                        label: "屬性/成果 (名詞)",
+                        role: "被保證的性質",
+                        original: "品質",
+                        prompt: "屬性或特質是什麼？（例：整潔、水準、健康、安全）",
+                        bank: ["整潔", "水準", "健康", "安全", "戰力", "熱情"]
+                    }
+                ]
+            },
+            {
+                id: "f5_2",
+                category: "檔案 5 - 我會照樣寫",
+                title: "2. 在「常見」的「職業」裡，「隱藏」許多「有趣」的「祕密」",
+                sentence: "在常見的職業裡，隱藏許多有趣的祕密。",
+                components: [
+                    {
+                        type: "prep1",
+                        label: "介詞",
+                        role: "在",
+                        original: "在",
+                        prompt: "引介地點範疇",
+                        bank: ["在"]
+                    },
+                    {
+                        type: "adj1",
+                        label: "形容詞 1",
+                        role: "形容環境/場所",
+                        original: "常見",
+                        prompt: "環境或領域的特徵？（例：平凡、廣闊、古老）",
+                        bank: ["平凡", "廣闊", "古老", "熱鬧", "寧靜"]
+                    },
+                    {
+                        type: "de1",
+                        label: "結構詞",
+                        role: "的",
+                        original: "的",
+                        prompt: "助詞",
+                        bank: ["的"]
+                    },
+                    {
+                        type: "noun1",
+                        label: "場所/領域 (名詞)",
+                        role: "範圍",
+                        original: "職業",
+                        prompt: "指的是什麼領域或地方？（例：生活、森林、書籍、市集）",
+                        bank: ["生活", "森林", "書籍", "市集", "校園"]
+                    },
+                    {
+                        type: "prep2",
+                        label: "方位詞",
+                        role: "裡",
+                        original: "裡，",
+                        prompt: "方位詞",
+                        bank: ["裡，", "中，"]
+                    },
+                    {
+                        type: "verb",
+                        label: "動作 (動詞)",
+                        role: "呈現的狀態動詞",
+                        original: "隱藏",
+                        prompt: "包含或展現出什麼動作？（例：蘊含、發現、充滿、孕育）",
+                        bank: ["蘊含", "發現", "充滿", "孕育", "記錄"]
+                    },
+                    {
+                        type: "quant",
+                        label: "數量修飾",
+                        role: "許多",
+                        original: "許多",
+                        prompt: "數量的描述",
+                        bank: ["許多", "無數", "不少", "豐富的"]
+                    },
+                    {
+                        type: "adj2",
+                        label: "形容詞 2",
+                        role: "描述最後名詞的特質",
+                        original: "有趣",
+                        prompt: "特徵是什麼？（例：動人、神秘、寶貴、驚喜）",
+                        bank: ["動人", "神秘", "寶貴", "驚喜", "實用"]
+                    },
+                    {
+                        type: "de2",
+                        label: "結構詞",
+                        role: "的",
+                        original: "的",
+                        prompt: "助詞",
+                        bank: ["的"]
+                    },
+                    {
+                        type: "noun2",
+                        label: "核心名詞",
+                        role: "最終對象",
+                        original: "祕密",
+                        prompt: "蘊含著什麼事物？（例：故事、生態、知識、回憶）",
+                        bank: ["故事", "生態", "知識", "回憶", "技巧"]
+                    }
+                ]
+            },
+            {
+                id: "f5_句1",
+                category: "檔案 5 - 造句練習",
+                title: "3. 【造句】每當……總是……——",
+                sentence: "每當夕陽西下，爺爺總是會坐在庭院裡喝茶。",
+                components: [
+                    {
+                        type: "part1",
+                        label: "時間/情境 (每當...)",
+                        role: "特定時刻或條件",
+                        original: "每當夕陽西下，",
+                        prompt: "什麼時間或狀況發生時？",
+                        bank: ["每當遇到困難，", "每當音樂響起，", "每當寒風吹起，"]
+                    },
+                    {
+                        type: "subject",
+                        label: "人物",
+                        role: "主角",
+                        original: "爺爺",
+                        prompt: "主角是誰？",
+                        bank: ["爺爺", "媽媽", "大家", "我"]
+                    },
+                    {
+                        type: "part2",
+                        label: "習慣/反應 (總是...)",
+                        role: "習慣性的反應或動作",
+                        original: "總是會坐在庭院裡喝茶。",
+                        prompt: "總是會做出什麼反應或動作？",
+                        bank: ["總是耐心給予我鼓勵。", "總是忍不住跟著旋律翩翩起舞。", "總是想吃一碗熱騰騰的湯麵。"]
+                    }
+                ]
+            },
+            {
+                id: "f5_句2",
+                category: "檔案 5 - 造句練習",
+                title: "4. 【造句】……不過……——",
+                sentence: "這道數學題看起來很複雜，不過只要細心計算就能解開。",
+                components: [
+                    {
+                        type: "part1",
+                        label: "前提狀況",
+                        role: "先描述第一種情況",
+                        original: "這道數學題看起來很複雜，",
+                        prompt: "事情的前半段狀況是什麼？",
+                        bank: ["今天的天氣有點陰沉，", "這場比賽雖然艱難，", "這部電影時間很長，"]
+                    },
+                    {
+                        type: "part2",
+                        label: "轉折說明 (不過...)",
+                        role: "轉折補充說明",
+                        original: "不過只要細心計算就能解開。",
+                        prompt: "不過後續有什麼轉折或解決辦法？",
+                        bank: ["不過並沒有下雨。", "不過選手們依然全力以赴。", "不過劇情非常緊湊精彩。"]
+                    }
+                ]
+            },
+
+            // --- 檔案 6 ---
+            {
+                id: "f6_1",
+                category: "檔案 6 - 我會照樣寫",
+                title: "1. 「拖」著「火紅」的「尾巴」「直衝雲霄」",
+                sentence: "拖著火紅的尾巴直衝雲霄",
+                components: [
+                    {
+                        type: "verb1",
+                        label: "動作 (動詞)",
+                        role: "伴隨動作",
+                        original: "拖",
+                        prompt: "做了什麼動作？（例：穿、帶著、披、展）",
+                        bank: ["穿", "帶", "披", "展", "搖", "懷"]
+                    },
+                    {
+                        type: "fixed1",
+                        label: "動態詞",
+                        role: "著",
+                        original: "著",
+                        prompt: "助詞",
+                        bank: ["著"]
+                    },
+                    {
+                        type: "adj",
+                        label: "顏色/形容詞",
+                        role: "修飾語",
+                        original: "火紅",
+                        prompt: "什麼顏色或樣貌？（例：華麗、燦爛、雪白、輕盈）",
+                        bank: ["華麗", "燦爛", "雪白", "輕盈", "自信"]
+                    },
+                    {
+                        type: "de",
+                        label: "結構詞",
+                        role: "的",
+                        original: "的",
+                        prompt: "助詞",
+                        bank: ["的"]
+                    },
+                    {
+                        type: "noun",
+                        label: "事物/特徵 (名詞)",
+                        role: "攜帶的名詞",
+                        original: "尾巴",
+                        prompt: "身上的什麼特徵或物品？（例：外衣、笑容、翅膀、步伐）",
+                        bank: ["外衣", "笑容", "翅膀", "步伐", "神采"]
+                    },
+                    {
+                        type: "action",
+                        label: "主要動態/四字詞",
+                        role: "最終發生的動態或成語",
+                        original: "直衝雲霄",
+                        prompt: "展現怎樣的動態？（例：走向舞台、迎向陽光、飛向藍天、邁向未來）",
+                        bank: ["走向舞台", "迎向陽光", "飛向藍天", "邁向未來", "登上位子"]
+                    }
+                ]
+            },
+            {
+                id: "f6_句1",
+                category: "檔案 6 - 造句練習",
+                title: "2. 【造句】……然而……——",
+                sentence: "他雖然練習了很久，然而在比賽時依然因為緊張而失常。",
+                components: [
+                    {
+                        type: "part1",
+                        label: "原先預期",
+                        role: "預期或前半段事實",
+                        original: "他雖然練習了很久，",
+                        prompt: "原本的付出的努力或情況？",
+                        bank: ["大家原本計畫去露營，", "這款新產品廣告聲勢浩大，", "外面的陽光看似溫暖，"]
+                    },
+                    {
+                        type: "part2",
+                        label: "意外轉折 (然而...)",
+                        role: "相反或意料之外的結果",
+                        original: "然而在比賽時依然因為緊張而失常。",
+                        prompt: "然而發生了什麼意料之外的轉折？",
+                        bank: ["然而一場突如其來的大雨打亂了行程。", "然而實際銷售成果卻不如預期。", "然而吹來的風卻十分刺骨。"]
+                    }
+                ]
+            },
+            {
+                id: "f6_句2",
+                category: "檔案 6 - 造句練習",
+                title: "3. 【造句】必須……還要……——",
+                sentence: "學習語言不僅必須持之以恆，還要勇敢開口練習。",
+                components: [
+                    {
+                        type: "topic",
+                        label: "主題",
+                        role: "描述的主題",
+                        original: "學習語言不僅",
+                        prompt: "做什麼事情或達成什麼目標？",
+                        bank: ["作為一名合格的隊長，", "想要保持身體健康，", "完成這項研究作品，"]
+                    },
+                    {
+                        type: "req1",
+                        label: "基本要求 (必須...)",
+                        role: "第一層必要條件",
+                        original: "必須持之以恆，",
+                        prompt: "第一個必要的條件是什麼？",
+                        bank: ["必須具備責任感，", "必須維持規律作息，", "必須收集充實的資料，"]
+                    },
+                    {
+                        type: "req2",
+                        label: "進階要求 (還要...)",
+                        role: "第二層遞進條件",
+                        original: "還要勇敢開口練習。",
+                        prompt: "還要配合什麼補充條件？",
+                        bank: ["還要懂得聆聽隊友的心聲。", "還要配合均衡的飲食習慣。", "還要經過多次嚴謹的實驗驗證。"]
+                    }
+                ]
+            },
+
+            // --- 檔案 7 ---
+            {
+                id: "f7_1",
+                category: "檔案 7 - 我會照樣寫",
+                title: "1. 「炫耀」著「新綠」的「小草」",
+                sentence: "炫耀著新綠的小草",
+                components: [
+                    {
+                        type: "verb",
+                        label: "展現動作 (動詞)",
+                        role: "主角動作",
+                        original: "炫耀",
+                        prompt: "展現出什麼動作？（例：散發、綻放、展現、懷抱）",
+                        bank: ["散發", "綻放", "展現", "懷抱", "吟唱"]
+                    },
+                    {
+                        type: "fixed1",
+                        label: "動態詞",
+                        role: "著",
+                        original: "著",
+                        prompt: "助詞",
+                        bank: ["著"]
+                    },
+                    {
+                        type: "adj",
+                        label: "形容/特質 (形容詞)",
+                        role: "形容詞",
+                        original: "新綠",
+                        prompt: "什麼色彩或特徵？（例：芬芳、美麗、自信、熱情）",
+                        bank: ["芬芳", "美麗", "自信", "熱情", "歡樂"]
+                    },
+                    {
+                        type: "de",
+                        label: "結構詞",
+                        role: "的",
+                        original: "的",
+                        prompt: "助詞",
+                        bank: ["的"]
+                    },
+                    {
+                        type: "noun",
+                        label: "主角 (名詞)",
+                        role: "事物名稱",
+                        original: "小草",
+                        prompt: "是誰或什麼事物？（例：花朵、笑容、青春、旋律）",
+                        bank: ["花朵", "少年", "笑容", "旋律", "溪流"]
+                    }
+                ]
+            },
+            {
+                id: "f7_句1",
+                category: "檔案 7 - 造句練習",
+                title: "2. 【造句】起先……隨後……——",
+                sentence: "起先天空只飄著細雨，隨後便颳起了狂風大雨。",
+                components: [
+                    {
+                        type: "part1",
+                        label: "初期狀態 (起先...)",
+                        role: "一開始的情況",
+                        original: "起先天空只飄著細雨，",
+                        prompt: "剛開始時的情況如何？",
+                        bank: ["起先觀眾們安靜地聆聽，", "起先這項計畫並不被看好，", "起先舞台上只有一盞微弱的光芒，"]
+                    },
+                    {
+                        type: "part2",
+                        label: "後續發展 (隨後...)",
+                        role: "接著發生的變化",
+                        original: "隨後便颳起了狂風大雨。",
+                        prompt: "隨後產生了什麼改變或發展？",
+                        bank: ["隨後全場爆發出熱烈的掌聲。", "隨後經過團隊調整後獲得巨大成功。", "隨後優美的音樂聲響徹了整個大廳。"]
+                    }
+                ]
+            },
+            {
+                id: "f7_句2",
+                category: "檔案 7 - 造句練習",
+                title: "3. 【造句】先是……然後……再……——",
+                sentence: "做勞作時，先是構思圖樣，然後進行剪裁，再仔細地黏貼組合。",
+                components: [
+                    {
+                        type: "intro",
+                        label: "主題背景",
+                        role: "敘述的事情名稱",
+                        original: "做勞作時，",
+                        prompt: "在進行什麼活動時？",
+                        bank: ["準備這道料理時，", "進行科學實驗時，", "打掃教室時，"]
+                    },
+                    {
+                        type: "step1",
+                        label: "第一步 (先是...)",
+                        role: "先是 + 步驟一",
+                        original: "先是構思圖樣，",
+                        prompt: "第一步做什麼？",
+                        bank: ["先是準備食材，", "先是提出假設，", "先是整理桌椅，"]
+                    },
+                    {
+                        type: "step2",
+                        label: "第二步 (然後...)",
+                        role: "然後 + 步驟二",
+                        original: "然後進行剪裁，",
+                        prompt: "接著第二步做什麼？",
+                        bank: ["然後依序下鍋烹調，", "然後動手記錄數據，", "然後掃淨地面灰塵，"]
+                    },
+                    {
+                        type: "step3",
+                        label: "第三步 (再...)",
+                        role: "再 + 步驟三",
+                        original: "再仔細地黏貼組合。",
+                        prompt: "最後第三步完成什麼？",
+                        bank: ["再進行精緻的擺盤。", "再分析實驗結果。", "再用拖把將地板拖乾淨。"]
+                    }
+                ]
+            }
+        ];
+
+        // State Management
+        let currentTopic = TOPIC_DATABASE[0];
+        let userInputs = {}; // Stores { componentIndex: currentWord }
+        let showWordBank = {}; // Stores { componentIndex: boolean }
+
+        // DOM Elements
+        const topicSelect = document.getElementById('topic-select');
+        const customSentenceInput = document.getElementById('custom-sentence');
+        const applyCustomBtn = document.getElementById('apply-custom-btn');
+        const targetSentenceDisplay = document.getElementById('target-sentence-display');
+        const posContainer = document.getElementById('pos-elements-container');
+        const generatedResult = document.getElementById('generated-result');
+        const progressBar = document.getElementById('progress-bar');
+        const progressText = document.getElementById('progress-text');
+        const toggleWordbankGlobalBtn = document.getElementById('toggle-wordbank-global');
+        const resetBtn = document.getElementById('reset-btn');
+        const speakBtn = document.getElementById('speak-btn');
+        const copyBtn = document.getElementById('copy-btn');
+
+        // Initialization
+        window.addEventListener('DOMContentLoaded', () => {
+            initTopicSelect();
+            loadTopic(TOPIC_DATABASE[0]);
+            setupEventListeners();
+        });
+
+        // Populate Dropdown Options Grouped by Category
+        function initTopicSelect() {
+            topicSelect.innerHTML = '';
+            
+            // Group by category
+            const categories = {};
+            TOPIC_DATABASE.forEach((topic, idx) => {
+                const cat = topic.category || "其他題型";
+                if(!categories[cat]) categories[cat] = [];
+                categories[cat].push({ topic, idx });
+            });
+
+            for(const catName in categories) {
+                const optGroup = document.createElement('optgroup');
+                optGroup.label = catName;
+                
+                categories[catName].forEach(item => {
+                    const opt = document.createElement('option');
+                    opt.value = item.idx;
+                    opt.textContent = item.topic.title;
+                    optGroup.appendChild(opt);
+                });
+                
+                topicSelect.appendChild(optGroup);
+            }
+        }
+
+        // Load Selected Topic Into Interactive UI
+        function loadTopic(topic) {
+            currentTopic = topic;
+            userInputs = {};
+            showWordBank = {};
+
+            // Set initial state
+            topic.components.forEach((comp, idx) => {
+                userInputs[idx] = comp.original;
+                showWordBank[idx] = false;
+            });
+
+            // Update UI Displays
+            targetSentenceDisplay.textContent = currentTopic.sentence;
+            renderPosComponents();
+            updateLivePreview();
+            updateProgress();
+        }
+
+        // Render Structure Breakdown Components
+        function renderPosComponents() {
+            posContainer.innerHTML = '';
+
+            currentTopic.components.forEach((comp, idx) => {
+                const card = document.createElement('div');
+                card.className = "step-card bg-slate-50 rounded-xl p-5 border border-slate-200 hover:border-indigo-300 transition";
+
+                const isCustomized = userInputs[idx] !== comp.original;
+
+                card.innerHTML = `
+                    <div class="flex flex-wrap items-center justify-between gap-2 mb-3">
+                        <div class="flex items-center space-x-2">
+                            <span class="bg-indigo-600 text-white text-xs font-bold px-2.5 py-1 rounded-md">
+                                ${comp.label}
+                            </span>
+                            <span class="text-xs text-slate-500 font-medium">原句範例：<strong class="text-slate-700">${comp.original}</strong></span>
+                        </div>
+                        <button class="toggle-bank-btn text-xs font-semibold text-indigo-600 hover:text-indigo-800 flex items-center gap-1" data-index="${idx}">
+                            <i class="fa-solid ${showWordBank[idx] ? 'fa-eye-slash' : 'fa-lightbulb'} text-amber-500"></i>
+                            ${showWordBank[idx] ? '收起靈感詞庫' : '靈感詞庫輔助'}
+                        </button>
+                    </div>
+
+                    <!-- Prompt Text for Student Thinking -->
+                    <p class="text-xs text-slate-600 mb-3 bg-white p-2.5 rounded-lg border border-slate-100 flex items-start gap-2">
+                        <i class="fa-solid fa-circle-question text-indigo-400 mt-0.5"></i>
+                        <span><strong>思考引導：</strong>${comp.prompt}</span>
+                    </p>
+
+                    <!-- Student Input Field -->
+                    <div class="relative">
+                        <input type="text" 
+                            data-index="${idx}" 
+                            value="${userInputs[idx]}" 
+                            placeholder="請在此輸入你的聯想詞彙..." 
+                            class="user-word-input w-full p-3 pr-10 border ${isCustomized ? 'border-emerald-500 bg-emerald-50/30' : 'border-slate-300'} rounded-xl text-slate-800 font-bold focus:outline-none focus:ring-2 focus:ring-indigo-500 transition">
+                        ${isCustomized ? '<i class="fa-solid fa-circle-check text-emerald-500 absolute right-3 top-3.5 text-lg"></i>' : ''}
+                    </div>
+
+                    <!-- Word Bank Drawer -->
+                    ${showWordBank[idx] ? `
+                        <div class="mt-4 pt-3 border-t border-slate-200/80 animate-fadeIn">
+                            <span class="text-xs font-semibold text-slate-500 block mb-2 flex items-center gap-1">
+                                <i class="fa-solid fa-tags text-indigo-400"></i> 點擊詞彙直接套用：
+                            </span>
+                            <div class="flex flex-wrap gap-2">
+                                ${comp.bank.map(word => `
+                                    <button class="bank-chip word-chip text-xs bg-white hover:bg-indigo-50 text-slate-700 hover:text-indigo-700 border border-slate-200 hover:border-indigo-300 font-medium px-3 py-1.5 rounded-lg shadow-sm transition" data-index="${idx}" data-word="${word}">
+                                        ${word}
+                                    </button>
+                                `).join('')}
+                            </div>
+                        </div>
+                    ` : ''}
+                `;
+
+                posContainer.appendChild(card);
+            });
+
+            // Re-bind dynamic events inside cards
+            bindCardEvents();
+        }
+
+        // Bind Card-level Events
+        function bindCardEvents() {
+            // Input changes
+            document.querySelectorAll('.user-word-input').forEach(input => {
+                input.addEventListener('input', (e) => {
+                    const idx = e.target.dataset.index;
+                    userInputs[idx] = e.target.value;
+                    updateLivePreview();
+                    updateProgress();
+                    
+                    // Toggle border styling
+                    if(userInputs[idx] !== currentTopic.components[idx].original) {
+                        e.target.classList.add('border-emerald-500', 'bg-emerald-50/30');
+                        e.target.classList.remove('border-slate-300');
+                    } else {
+                        e.target.classList.remove('border-emerald-500', 'bg-emerald-50/30');
+                        e.target.classList.add('border-slate-300');
+                    }
+                });
+            });
+
+            // Toggle word bank
+            document.querySelectorAll('.toggle-bank-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const idx = btn.dataset.index || btn.closest('button').dataset.index;
+                    showWordBank[idx] = !showWordBank[idx];
+                    renderPosComponents();
+                });
+            });
+
+            // Click word bank chip
+            document.querySelectorAll('.bank-chip').forEach(chip => {
+                chip.addEventListener('click', (e) => {
+                    const idx = chip.dataset.index;
+                    const word = chip.dataset.word;
+                    userInputs[idx] = word;
+                    renderPosComponents();
+                    updateLivePreview();
+                    updateProgress();
+                    showToast(`已套用詞彙：「${word}」`);
+                });
+            });
+        }
+
+        // Update Live Story Result Preview
+        function updateLivePreview() {
+            let sentencePieces = [];
+            currentTopic.components.forEach((comp, idx) => {
+                const word = userInputs[idx] || '';
+                const isModified = word !== comp.original;
+                
+                // Wrap modified words in highlight style
+                if (isModified && word.trim() !== '') {
+                    sentencePieces.push(`<span class="text-indigo-600 font-extrabold underline decoration-indigo-300 underline-offset-4">${escapeHtml(word)}</span>`);
+                } else {
+                    sentencePieces.push(`<span class="text-slate-700">${escapeHtml(word)}</span>`);
+                }
+            });
+
+            generatedResult.innerHTML = sentencePieces.join('');
+        }
+
+        // Calculate and Update Student Progress
+        function updateProgress() {
+            const total = currentTopic.components.length;
+            let modifiedCount = 0;
+
+            currentTopic.components.forEach((comp, idx) => {
+                if (userInputs[idx] && userInputs[idx] !== comp.original && userInputs[idx].trim() !== '') {
+                    modifiedCount++;
+                }
+            });
+
+            const percent = Math.round((modifiedCount / total) * 100);
+            progressBar.style.width = `${percent}%`;
+            progressText.textContent = `${percent}% (${modifiedCount}/${total} 處替換)`;
+
+            if(percent === 100) {
+                progressBar.classList.remove('bg-indigo-600');
+                progressBar.classList.add('bg-emerald-500');
+            } else {
+                progressBar.classList.remove('bg-emerald-500');
+                progressBar.classList.add('bg-indigo-600');
+            }
+        }
+
+        // Global Event Listeners
+        function setupEventListeners() {
+            // Preset Topic Selection
+            topicSelect.addEventListener('change', (e) => {
+                const selectedIndex = e.target.value;
+                loadTopic(TOPIC_DATABASE[selectedIndex]);
+                showToast(`已切換至：${TOPIC_DATABASE[selectedIndex].title}`);
+            });
+
+            // Custom Sentence Logic
+            applyCustomBtn.addEventListener('click', () => {
+                const text = customSentenceInput.value.trim();
+                if (!text) {
+                    showToast('請輸入一個完整的句子！', 'fa-exclamation-triangle');
+                    return;
+                }
+
+                const customTopic = parseCustomSentence(text);
+                loadTopic(customTopic);
+                showToast('已自訂並解析句子！');
+            });
+
+            // Global Word Bank Toggle
+            toggleWordbankGlobalBtn.addEventListener('click', () => {
+                const allOpen = Object.values(showWordBank).every(v => v === true);
+                currentTopic.components.forEach((_, idx) => {
+                    showWordBank[idx] = !allOpen;
+                });
+                renderPosComponents();
+            });
+
+            // Reset Button
+            resetBtn.addEventListener('click', () => {
+                loadTopic(currentTopic);
+                showToast('已重置為初始句型。');
+            });
+
+            // Speech Synthesis (Read Aloud)
+            speakBtn.addEventListener('click', () => {
+                const textToRead = generatedResult.textContent;
+                if (!('speechSynthesis' in window)) {
+                    showToast('您的瀏覽器不支援語音朗讀功能。', 'fa-exclamation-circle');
+                    return;
+                }
+
+                window.speechSynthesis.cancel();
+                const utterance = new SpeechSynthesisUtterance(textToRead);
+                utterance.lang = 'zh-TW';
+                utterance.rate = 0.9;
+                window.speechSynthesis.speak(utterance);
+                showToast('正在朗讀創作文章...');
+            });
+
+            // Copy Result Text
+            copyBtn.addEventListener('click', () => {
+                const textToCopy = generatedResult.textContent.trim();
+                
+                const el = document.createElement('textarea');
+                el.value = textToCopy;
+                document.body.appendChild(el);
+                el.select();
+                document.execCommand('copy');
+                document.body.removeChild(el);
+
+                showToast('已成功複製全新創作！', 'fa-circle-check');
+            });
+        }
+
+        // Helper: Simple Parser for User Custom Sentence
+        function parseCustomSentence(sentence) {
+            const cleanText = sentence.replace(/[，。！？」]/g, '');
+            const len = cleanText.length;
+            const chunkSize = Math.max(1, Math.floor(len / 4));
+
+            const part1 = cleanText.substring(0, chunkSize) || "美好的";
+            const part2 = cleanText.substring(chunkSize, chunkSize * 2) || "時光";
+            const part3 = cleanText.substring(chunkSize * 2, chunkSize * 3) || "悄悄地";
+            const part4 = cleanText.substring(chunkSize * 3) || "流逝";
+
+            return {
+                id: "custom_" + Date.now(),
+                category: "自訂題目",
+                title: "【自訂題目】" + sentence.substring(0, 10) + "...",
+                sentence: sentence,
+                components: [
+                    {
+                        type: "part1",
+                        label: "前置/修飾成分",
+                        role: "句子的起頭或修飾部分",
+                        original: part1,
+                        prompt: "這個部分可以用什麼詞來描述或形容？",
+                        bank: ["美麗的", "寧靜的", "突然間", "陽光下", "漸漸地"]
+                    },
+                    {
+                        type: "part2",
+                        label: "主要對象 (名詞)",
+                        role: "句子的核心人物或事物",
+                        original: part2,
+                        prompt: "故事的主角或核心是什麼？",
+                        bank: ["小鳥", "溪流", "少年", "時光", "微風"]
+                    },
+                    {
+                        type: "part3",
+                        label: "動作狀態 (副詞/修飾)",
+                        role: "動作發生的模樣或速度",
+                        original: "悄悄地",
+                        prompt: "這個動作進行得怎麼樣？",
+                        bank: ["快樂地", "飛快地", "悄悄地", "輕柔地", "堅定地"]
+                    },
+                    {
+                        type: "part4",
+                        label: "核心動作/結果",
+                        role: "進行的動作或最後狀態",
+                        original: part4,
+                        prompt: "主角做了什麼事，或是產生了什麼變化？",
+                        bank: ["飛向遠方", "閃耀著光芒", "歌唱著", "跨越挑戰", "悄然展開"]
+                    }
+                ]
+            };
+        }
+
+        // Toast Notification Helper
+        function showToast(msg, iconClass = 'fa-circle-info') {
+            const toast = document.getElementById('toast');
+            const toastMsg = document.getElementById('toast-msg');
+            const toastIcon = document.getElementById('toast-icon');
+
+            toastMsg.textContent = msg;
+            toastIcon.className = `fa-solid ${iconClass} text-indigo-400`;
+
+            toast.classList.remove('translate-y-20', 'opacity-0');
+            toast.classList.add('translate-y-0', 'opacity-100');
+
+            setTimeout(() => {
+                toast.classList.add('translate-y-20', 'opacity-0');
+                toast.classList.remove('translate-y-0', 'opacity-100');
+            }, 3000);
+        }
+
+        // Utility: HTML Escaping
+        function escapeHtml(text) {
+            return text
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#039;");
+        }
+    </script>
+</body>
+</html>
